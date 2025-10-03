@@ -11,8 +11,8 @@ import {
   verifyRefreshToken,
   verifyVerificationToken,
 } from "../utils/jwt";
-import { sendEmail } from "../utils/sendMail";
 import { verifyEmailTemplate } from "../templates/verifyEmail";
+import emailQueue from "../queues/email.queue";
 
 export const signup = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -55,13 +55,17 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
 
     logger.info(`New user registered: ${newUser.email}`);
 
-    await sendEmail({
+    const mailData = {
       to: newUser.email,
       subject: "Verify your email",
       html: verifyEmailTemplate({
         name: newUser.name,
         token: verificationToken,
       }),
+    };
+
+    await emailQueue.add("verificationEmail", mailData, {
+      jobId: `verify:${newUser.id}`, // prevents duplicates
     });
 
     // 7. Return response

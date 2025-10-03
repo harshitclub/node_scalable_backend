@@ -1,45 +1,74 @@
+/**
+ * ================================================
+ *  Main Server Entry (index.ts)
+ * ================================================
+ * - Loads environment variables
+ * - Configures Express middlewares
+ * - Mounts API routes
+ * - Handles errors & 404 routes
+ * - Provides health check endpoint
+ * - Gracefully shuts down on SIGINT
+ * ================================================
+ */
+
 import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
+// Third-party middlewares
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+
+// Routers
 import authRouter from "./routes/auth.routes";
 import userRouter from "./routes/user.routes";
 import adminRouter from "./routes/admin.routes";
+
+// Custom middlewares & configs
 import { errorHandler } from "./middlewares/errorHandler";
 import { morganMiddleware } from "./configs/morganMiddleware";
 import { logger } from "./configs/logger";
 import { config } from "./configs/config";
 import { prisma } from "./configs/prisma";
+import redisCache from "./configs/redisCache";
 
-// Initialize express app
+// ================================================
+// Initialize Express app
+// ================================================
 const app: Application = express();
 
-// Middlewares
-app.use(morganMiddleware); // Logging
-app.use(express.json({ limit: "10kb" })); // Parse JSON
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded
-app.use(cookieParser());
-app.use(cors({ origin: "*", credentials: true })); // Can configure origin later
+// ================================================
+// Global Middlewares
+// ================================================
+app.use(morganMiddleware); // Request logging
+app.use(express.json({ limit: "10kb" })); // Parse JSON with size limit
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded payloads
+app.use(cookieParser()); // Parse cookies
+app.use(cors({ origin: "*", credentials: true })); // CORS (configure origin in prod)
 app.use(helmet()); // Security headers
 
-// Health check route
+// ================================================
+// Health Check Route
+// ================================================
 app.get("/api/health", (_req: Request, res: Response) => {
-  logger.info("Health check endpoint hit"); // info log
+  logger.info("Health check endpoint hit");
   res.status(200).json({
-    status: "Success",
+    status: "success",
     message: "Server is healthy",
   });
 });
 
-// Routes
+// ================================================
+// API Routes
+// ================================================
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/admin", adminRouter);
 
-// 404 route handler
+// ================================================
+// 404 Route Handler
+// ================================================
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     status: "fail",
@@ -47,23 +76,30 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-// Error handler
+// ================================================
+// Global Error Handler
+// ================================================
 app.use(errorHandler);
 
-// Start server
+// ================================================
+// Start Server
+// ================================================
 const PORT = config.PORT;
 
 const server = app.listen(PORT, () => {
-  logger.info(`🚀 Server running in ${config.ENV} mode`);
-  logger.info(`📡 Listening on http://localhost:${PORT}`);
+  logger.info(`Server ${process.pid} running in ${config.ENV} mode`);
+  logger.info(`Listening on http://localhost:${PORT}`);
 });
 
+// ================================================
+// Graceful Shutdown
+// ================================================
 process.on("SIGINT", async () => {
-  logger.info(`Received SIGINT. Shutting down gracefully...`);
+  logger.info("SIGINT: shutting down API gracefully...");
   server.close(async () => {
-    ``;
     await prisma.$disconnect();
-    logger.info("Cleanup done. Exiting.");
-    process.exit();
+    await redisCache.quit();
+    logger.info("API cleanup done. Exiting.");
+    process.exit(0);
   });
 });

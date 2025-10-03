@@ -6,14 +6,9 @@
     "auditLog": "E:\\Solid_Backend\\logs\\.cfa5427fd8ef77d1703921169fd2d0a6b647ac74-audit.json",
     "files": [
         {
-            "date": 1759058736842,
-            "name": "E:\\Solid_Backend\\logs\\info-2025-09-28.log",
-            "hash": "6bf4ffc7bab4cbeae2cc2161fa3392ecf7942a6be48309e2c9e7a6aad84a84c3"
-        },
-        {
-            "date": 1759211389847,
-            "name": "E:\\Solid_Backend\\logs\\info-2025-09-30.log",
-            "hash": "1c2dffd4e97b34cd1cfb41c79490b31aa0c00deef976e35b0109811d59974833"
+            "date": 1759482630111,
+            "name": "E:\\Solid_Backend\\logs\\info-2025-10-03.log",
+            "hash": "3873d0504337c813763dd1c40e1cadad162a5bfb05bcb1a6963b477dfc0ab6eb"
         }
     ],
     "hashType": "sha256"

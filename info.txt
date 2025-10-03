@@ -1,0 +1,37 @@
+postgre docker command: docker run --name slb_postgres -e POSTGRES_USER=harshit -e POSTGRES_PASSWORD=Harshit@7505 -e POSTGRES_DB=mydb -p 5432:5432 -d postgres:18.0
+
+//////////////////////////////////////
+cmd: docker run
+desc: Tells docker: create and start a new container from an image
+
+cmd: --name slb-backend
+desc: Assign a custom name, without this docker generates funny name randomly
+
+ex: 
+docker stop slb-backend
+docker start slb-backend
+docker logs slb-backend
+
+cmd: -e POSTGRES_USER=harshit
+desc: sets an environment variable inside container | The image looks for these variables at startup.
+
+cmd: -e POSTGRES_PASSWORD=Harshit@7505
+desc: Another environment variable
+
+cmd: -e POSTGRES_DB=mydb
+desc: Tells postgres: when the container starts, create a default database named mydb
+
+cmd: -p 5432:5432
+desc: port mapping
+
+cmd: -d
+desc: detached mode - runs in the background
+
+cmd: postgres:latest
+desc: This is the image name for docker hub
+//////////////////////////////////////////////////////////////////////////////////////////
+
+redis cache docker: docker run --name redis_cache -p 6380:6379 -d redis:8.2.1
+redis queue docker: docker run --name redis_queue -p 6381:6379 -d redis:8.2.1
+
+cmd for redis cli - docker exec -it redis_cache redis-cli
