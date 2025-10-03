@@ -139,7 +139,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "E:\\Solid_Backend\\src\\generated\\prisma",
+      "value": "E:\\Solid_Backend\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -158,9 +158,9 @@ const config = {
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "schemaEnvPath": "../../.env"
   },
-  "relativePath": "../../../prisma",
+  "relativePath": "../../prisma",
   "clientVersion": "6.16.3",
   "engineVersion": "bb420e667c1820a8c05a38023385f6cc7ef8e83a",
   "datasourceNames": [
@@ -176,8 +176,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                String   @id @default(cuid())\n  name              String\n  email             String   @unique\n  password          String\n  role              Role     @default(USER)\n  isVerified        Boolean  @default(false)\n  verificationToken String?\n  refreshToken      String?\n  createdAt         DateTime @default(now())\n  updatedAt         DateTime @updatedAt\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n",
-  "inlineSchemaHash": "9179030f65a2feed2924e74560e891c2560d073e96d3b645425e3dec7a180f76",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                String   @id @default(cuid())\n  name              String\n  email             String   @unique\n  password          String\n  role              Role     @default(USER)\n  isVerified        Boolean  @default(false)\n  verificationToken String?\n  refreshToken      String?\n  createdAt         DateTime @default(now())\n  updatedAt         DateTime @updatedAt\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n",
+  "inlineSchemaHash": "eb82cd80b870c8588645d49905d359a1e14fb45eed96c4f15450f025fe715030",
   "copyEngine": true
 }
 
@@ -186,8 +186,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "src/generated/prisma",
     "generated/prisma",
+    "prisma",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -217,7 +217,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "src/generated/prisma/query_engine-windows.dll.node")
+path.join(process.cwd(), "generated/prisma/query_engine-windows.dll.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "src/generated/prisma/schema.prisma")
+path.join(process.cwd(), "generated/prisma/schema.prisma")

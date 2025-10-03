@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "slb-backend",
-      script: "./dist/server.js",
+      script: "./dist/index.js",
       instances: "max",
       exec_mode: "cluster",
       watch: false,
