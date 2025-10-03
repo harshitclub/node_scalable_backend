@@ -14,6 +14,8 @@
     "stop": "pm2 stop ecosystem.config.js",
     "restart": "pm2 restart ecosystem.config.js",
     "logs": "pm2 logs",
+    "monit": "pm2 monit",
+    "list": "pm2 list",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",

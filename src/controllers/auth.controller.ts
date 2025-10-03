@@ -13,6 +13,7 @@ import {
 } from "../utils/jwt";
 import { verifyEmailTemplate } from "../templates/verifyEmail";
 import emailQueue from "../queues/email.queue";
+import redisCache from "../configs/redisCache";
 
 export const signup = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -92,48 +93,72 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
 
 export const login = async (req: Request, res: Response): Promise<any> => {
   try {
+    // 1. Validate input
     const parsed = await loginSchema.safeParseAsync(req.body);
-
     if (!parsed.success) {
       throw new AppError("Validation failed", 400);
     }
-
     const { email, password } = parsed.data;
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const cacheKey = `user:${email}`;
+    const cachedUser = await redisCache.get(cacheKey);
 
+    let user;
+    let cached = false; // default false
+
+    // 2. Check Redis cache
+    if (cachedUser) {
+      logger.info(`Cache hit for user: ${email}`);
+      user = JSON.parse(cachedUser);
+      cached = true;
+    } else {
+      logger.info(`Cache miss for user: ${email}, querying DB...`);
+      user = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (user) {
+        // Store in cache for 1 hour
+        await redisCache.set(cacheKey, JSON.stringify(user), "EX", 3600);
+      }
+    }
+
+    // 3. Authentication
     if (!user) {
       throw new AppError("Invalid credentials", 401);
     }
 
     const isPasswordValid = await comparePassword(password, user.password);
-
     if (!isPasswordValid) {
       throw new AppError("Invalid credentials", 401);
     }
 
+    // 4. Tokens
     const accessToken = generateAccessToken({ id: user.id });
     const refreshToken = generateRefreshToken({ id: user.id });
 
     await prisma.user.update({
       where: { id: user.id },
-      data: {
-        refreshToken: refreshToken,
-      },
+      data: { refreshToken },
     });
 
+    // Always refresh cache with new refreshToken
+    const updatedUser = { ...user, refreshToken };
+    await redisCache.set(cacheKey, JSON.stringify(updatedUser), "EX", 3600);
+
+    // 5. Cookie + Response
     res.cookie("slb_refresh_token", refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: true, // in prod must be HTTPS
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
+      success: true,
+      cached, // true if served from Redis, false if DB
       message: "Login successful",
-      user: user,
+      user: updatedUser,
       slb_access_token: accessToken,
     });
   } catch (error) {
