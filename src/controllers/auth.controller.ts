@@ -278,5 +278,76 @@ export const verifyEmail = async (
 
 export const getProfile = async (req: Request, res: Response): Promise<any> => {
   try {
-  } catch (error) {}
+    const userId = req.user?.id;
+
+    if (!userId) {
+      logger.error("User ID missing in token payload.", { token: req.user });
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID not found in request." });
+    }
+
+    const cacheKey = `user:${userId}:profile`;
+
+    // Check cache first
+    const cachedData = await redisCache.get(cacheKey);
+    if (cachedData) {
+      const user = JSON.parse(cachedData);
+      logger.info(`User profile for ${userId} served from Redis cache.`);
+      return res.status(200).json({
+        success: true,
+        message: "User profile retrieved successfully.",
+        user,
+        source: "cache",
+      });
+    }
+
+    // If not cached, fetch from DB
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isVerified: true,
+      },
+    });
+
+    if (!user) {
+      logger.warn(`User not found in database: ${userId}`);
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Cache the result with expiry (1 hour)
+    try {
+      await redisCache.set(cacheKey, JSON.stringify(user), "EX", 3600);
+      logger.info(`Cached user profile for ${userId} (TTL: 1h).`);
+    } catch (cacheError) {
+      logger.error("Redis cache set error:", cacheError);
+      // Don’t throw here — API should still succeed even if caching fails
+    }
+
+    // Send response
+    return res.status(200).json({
+      success: true,
+      message: "User profile retrieved successfully.",
+      user,
+      source: "db",
+    });
+  } catch (error: any) {
+    logger.error("Error retrieving user profile:", error);
+
+    // Use structured error response
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message:
+        error instanceof AppError
+          ? error.message
+          : "Internal Server Error. Please try again later.",
+    });
+  }
 };

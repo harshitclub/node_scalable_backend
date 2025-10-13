@@ -2,6 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/appError";
 import { verifyAccessToken } from "../utils/jwt";
 import jwt from "jsonwebtoken";
+import { AccessTokenPayload } from "../types/JWTPayload";
+
+// Extend Request interface to include tokenValue property
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: AccessTokenPayload;
+  }
+}
 
 export const authMiddleware = async (
   req: Request,
