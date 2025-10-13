@@ -1,6 +1,5 @@
 import winston from "winston";
 import path from "path";
-import "winston-daily-rotate-file";
 import { config } from "./config";
 
 // Define log levels
@@ -22,41 +21,46 @@ const colors = {
 };
 winston.addColors(colors);
 
-// Define log format
+// Log format
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-  winston.format.colorize({ all: true }), // color for console
+  winston.format.colorize({ all: true }),
   winston.format.printf(
     (info) => `[${info.timestamp}] ${info.level}: ${info.message}`
   )
 );
 
-// Daily Rotate File transport factory
-const dailyRotateFileTransport = (level: string) =>
-  new winston.transports.DailyRotateFile({
-    filename: path.join(__dirname, "../../logs", `${level}-%DATE%.log`),
-    datePattern: "YYYY-MM-DD",
-    level: level,
-    zippedArchive: true, // compress old logs
-    maxFiles: "15d", // keep logs for 15 days
+// Helper to create a rotating file transport with size limit
+const fileTransport = (level: string) =>
+  new winston.transports.File({
+    filename: path.join(__dirname, `../../logs/${level}.log`),
+    level,
+    maxsize: 1_000_000, // ~1MB ≈ roughly 2000 logs depending on length
+    maxFiles: 1, // keep only one file (overwrite when full)
+    tailable: true, // overwrite oldest logs first
   });
 
 // Create logger instance
 export const logger = winston.createLogger({
-  level: config.LOG_LEVEL, // dynamic log level via env
+  level: config.LOG_LEVEL || "info",
   levels: logLevels,
   format: logFormat,
   transports: [
-    new winston.transports.Console(), // logs to console
-    dailyRotateFileTransport("error"), // error logs file
-    dailyRotateFileTransport("info"), // info logs file
-    dailyRotateFileTransport("http"), // http logs file
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      ),
+    }),
+    fileTransport("error"),
+    fileTransport("info"),
+    fileTransport("http"),
   ],
 });
 
 // Morgan integration stream
 export const loggerStream = {
   write: (message: string) => {
-    logger.http(message.trim()); // Morgan logs pass to Winston http level
+    logger.http(message.trim());
   },
 };

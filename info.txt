@@ -1,5 +1,8 @@
 postgre docker command: docker run --name slb_postgres -e POSTGRES_USER=harshit -e POSTGRES_PASSWORD=Harshit@7505 -e POSTGRES_DB=mydb -p 5432:5432 -d postgres:18.0
 
+docker run -d --name pgbouncer --link slb_postgres:postgres -p 6432:6432 -e DATABASE_URL=postgres://harshit:Harshit%407505@postgres:5432/mydb -e PGBOUNCER_USER=harshit -e PGBOUNCER_PASSWORD=Harshit@7505 -e PGBOUNCER_POOL_MODE=transaction -e PGBOUNCER_MAX_CLIENT_CONN=1000 -e PGBOUNCER_DEFAULT_POOL_SIZE=50 -e PGBOUNCER_IGNORE_STARTUP_PARAMETERS=extra_float_digits edoburu/pgbouncer
+
+
 //////////////////////////////////////
 cmd: docker run
 desc: Tells docker: create and start a new container from an image

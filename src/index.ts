@@ -81,42 +81,42 @@ app.use(cors({ origin: "*", credentials: true }));
 /* ---------------------------------
  * Rate Limiting (only for production)
  * --------------------------------- */
-if (config.ENV === "production") {
-  /**
-   * Global Rate Limiter
-   * - Restricts excessive requests from a single IP.
-   * - Helps prevent brute-force or DDoS-style attacks.
-   */
-  app.use(
-    "/api",
-    rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 300, // limit each IP to 300 requests per window
-      standardHeaders: true,
-      legacyHeaders: false,
-      message: {
-        status: "fail",
-        message: "Too many requests, please try again later.",
-      },
-    })
-  );
+// if (config.ENV === "production") {
+//   /**
+//    * Global Rate Limiter
+//    * - Restricts excessive requests from a single IP.
+//    * - Helps prevent brute-force or DDoS-style attacks.
+//    */
+//   app.use(
+//     "/api",
+//     rateLimit({
+//       windowMs: 15 * 60 * 1000, // 15 minutes
+//       max: 300, // limit each IP to 300 requests per window
+//       standardHeaders: true,
+//       legacyHeaders: false,
+//       message: {
+//         status: "fail",
+//         message: "Too many requests, please try again later.",
+//       },
+//     })
+//   );
 
-  /**
-   * Authentication Rate Limiter
-   * - Stricter limit for sensitive routes like login/register.
-   */
-  app.use(
-    "/api/auth",
-    rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 10, // 10 attempts per IP per window
-      message: {
-        status: "fail",
-        message: "Too many login attempts, please try again later.",
-      },
-    })
-  );
-}
+//   /**
+//    * Authentication Rate Limiter
+//    * - Stricter limit for sensitive routes like login/register.
+//    */
+//   app.use(
+//     "/api/auth",
+//     rateLimit({
+//       windowMs: 15 * 60 * 1000, // 15 minutes
+//       max: 10, // 10 attempts per IP per window
+//       message: {
+//         status: "fail",
+//         message: "Too many login attempts, please try again later.",
+//       },
+//     })
+//   );
+// }
 
 /* ---------------------------------
  * Health Check Route

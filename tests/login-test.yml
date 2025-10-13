@@ -1,0 +1,17 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 60           # test runs for 60 seconds
+      arrivalRate: 100        # 10 new virtual users per second
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "User Login Test"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "harshitclub@gmail.com"
+            password: "Harshit@123"

@@ -1,0 +1,15 @@
+config:
+  target: "http://localhost:5000"   # your API base URL
+  phases:
+    - duration: 60                  # test for 60 seconds
+      arrivalRate: 100               # 20 new virtual users per second
+  defaults:
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtZ2tnbjJ1bDAwMDBsYTAwd2N5ZjNhajMiLCJpYXQiOjE3NjAzMzc0NzEsImV4cCI6MTc2MDM0MTA3MX0.zbojxsLttVCcugJ54iqPmcNwEWBU01aHUEHGE0FFWA0"   # if your route is protected
+
+scenarios:
+  - name: "Get user profile test"
+    flow:
+      - get:
+          url: "/api/auth/me"
