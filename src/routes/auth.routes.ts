@@ -1,11 +1,13 @@
 import express from "express";
 import {
+  getProfile,
   login,
   logout,
   refreshToken,
   signup,
   verifyEmail,
 } from "../controllers/auth.controller";
+import { authMiddleware } from "../middlewares/authMiddleware";
 
 const authRouter = express.Router();
 
@@ -44,18 +46,6 @@ authRouter.post("/refresh-token", refreshToken);
  */
 authRouter.get("/verify-email/:token", verifyEmail);
 
-/**
- * @route   POST /api/auth/forgot-password
- * @desc    Request password reset email
- * @access  Public
- */
-// authRouter.post("/forgot-password");
-
-/**
- * @route   PATCH /api/auth/reset-password/:token
- * @desc    Reset password using token
- * @access  Public
- */
-// authRouter.patch("/reset-password/:token");
+authRouter.get("/me", authMiddleware, getProfile);
 
 export default authRouter;

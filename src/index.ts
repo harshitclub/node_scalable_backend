@@ -29,8 +29,6 @@ import rateLimit from "express-rate-limit";
  * Routers
  * --------------------------------- */
 import authRouter from "./routes/auth.routes";
-import userRouter from "./routes/user.routes";
-import adminRouter from "./routes/admin.routes";
 
 /* ---------------------------------
  * Custom middlewares & configs
@@ -139,8 +137,6 @@ app.get("/api/health", (_req: Request, res: Response) => {
  * API Routes
  * --------------------------------- */
 app.use("/api/auth", authRouter);
-app.use("/api/users", userRouter);
-app.use("/api/admin", adminRouter);
 
 /* ---------------------------------
  * 404 Route Handler
